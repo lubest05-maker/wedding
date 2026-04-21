@@ -897,13 +897,24 @@
       white-space: pre-wrap;
       word-break: break-word;
     }
-    .gb-del {
-      position: absolute; top: 8px; right: 10px;
+    .gb-actions {
+      position: absolute; top: 8px; right: 8px;
+      display: flex; gap: 2px;
+    }
+    .gb-edit, .gb-del {
       background: none; border: none; cursor: pointer;
       color: var(--dust); font-size: 12px; opacity: 0.4;
       transition: opacity 0.15s;
+      padding: 2px 6px;
+      font-family: inherit;
     }
-    .gb-del:hover { opacity: 1; }
+    .gb-edit:hover, .gb-del:hover { opacity: 1; }
+    .gb-form-row {
+      display: grid;
+      grid-template-columns: 1fr 1.3fr;
+      gap: 6px;
+    }
+    .gb-form-row input { margin-bottom: 8px; }
     .gb-empty {
       text-align: center; padding: 1.5rem;
       font-size: 12px; color: var(--ink-light);
@@ -1037,11 +1048,20 @@
     }
     .env-ask {
       font-family: 'Noto Serif KR', serif;
-      font-size: 12px;
-      color: var(--ink-light);
+      font-size: 13px;
+      color: var(--ink-mid);
       font-weight: 300;
-      letter-spacing: 1px;
-      margin-bottom: 1rem;
+      letter-spacing: 1.5px;
+      margin-bottom: 6px;
+      line-height: 1.7;
+    }
+    .env-ask-sub {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 11px;
+      color: var(--dust);
+      letter-spacing: 3px;
+      margin-bottom: 1.2rem;
     }
     .env-input {
       width: 100%;
@@ -1210,8 +1230,9 @@
     <div class="env-title-ko">청첩장이 도착했습니다</div>
     <div class="env-names">Minho &amp; Danbi</div>
     <div class="env-divider"></div>
-    <div class="env-ask">어떻게 불러드릴까요?</div>
-    <input type="text" id="env-name" class="env-input" placeholder="성함" maxlength="12" autocomplete="off">
+    <div class="env-ask">이 청첩장은 당신을 위해 준비되었습니다</div>
+    <div class="env-ask-sub">성함을 남겨주세요</div>
+    <input type="text" id="env-name" class="env-input" placeholder="" maxlength="12" autocomplete="off">
     <button class="env-btn" onclick="openEnvelope()">열어보기</button>
     <div><span class="env-skip" onclick="skipEnvelope()">이름 없이 열기</span></div>
   </div>
@@ -1747,7 +1768,10 @@
   </div>
 
   <div class="gb-form">
-    <input type="text" id="gb-name" placeholder="이름" maxlength="20">
+    <div class="gb-form-row">
+      <input type="text" id="gb-name" placeholder="이름" maxlength="20">
+      <input type="password" id="gb-pw" placeholder="비밀번호 (수정·삭제 시 필요)" maxlength="20">
+    </div>
     <textarea id="gb-msg" placeholder="축하 메시지를 남겨주세요" maxlength="300"></textarea>
     <button class="gb-form-btn" onclick="submitGB()">메시지 남기기</button>
   </div>
@@ -2067,12 +2091,13 @@ function renderGBList(list) {
     return;
   }
   el.innerHTML = list.map((m, i) => {
-    const delBtn = USE_SUPABASE
-      ? ''
-      : `<button class="gb-del" onclick="delGBLocal(${i})" title="삭제">✕</button>`;
+    const key = USE_SUPABASE ? m.id : i;
     return `
       <div class="gb-item">
-        ${delBtn}
+        <div class="gb-actions">
+          <button class="gb-edit" onclick="editGB(${key})" title="수정">✎</button>
+          <button class="gb-del" onclick="delGB(${key})" title="삭제">✕</button>
+        </div>
         <div class="gb-head">
           <div class="gb-name">${escapeHTML(m.name)}</div>
           <div class="gb-time">${formatTime(m.time)}</div>
@@ -2090,17 +2115,20 @@ async function renderGB() {
 
 async function submitGB() {
   const nameEl = document.getElementById('gb-name');
+  const pwEl = document.getElementById('gb-pw');
   const msgEl = document.getElementById('gb-msg');
   const name = nameEl.value.trim();
+  const pw = pwEl.value.trim();
   const msg = msgEl.value.trim();
   if (!name) { alert('이름을 입력해주세요'); return; }
+  if (pw.length < 4) { alert('비밀번호를 4자 이상 입력해주세요\n(수정·삭제 시 사용됩니다)'); return; }
   if (!msg) { alert('메시지를 입력해주세요'); return; }
 
   const btn = document.querySelector('.gb-form-btn');
   if (btn) btn.disabled = true;
 
   if (USE_SUPABASE) {
-    const { error } = await sb.from('guestbook').insert({ name, message: msg });
+    const { error } = await sb.from('guestbook').insert({ name, message: msg, password: pw });
     if (btn) btn.disabled = false;
     if (error) {
       console.error('[guestbook] insert error', error);
@@ -2109,12 +2137,13 @@ async function submitGB() {
     }
   } else {
     const list = JSON.parse(localStorage.getItem(GB_KEY) || '[]');
-    list.unshift({ name, msg, time: Date.now() });
+    list.unshift({ id: 'l' + Date.now(), name, msg, password: pw, time: Date.now() });
     localStorage.setItem(GB_KEY, JSON.stringify(list));
     if (btn) btn.disabled = false;
   }
 
   nameEl.value = '';
+  pwEl.value = '';
   msgEl.value = '';
   await renderGB();
 
@@ -2124,12 +2153,70 @@ async function submitGB() {
   setTimeout(() => { t.classList.remove('on'); t.textContent = '복사되었습니다'; }, 2200);
 }
 
-function delGBLocal(i) {
-  if (!confirm('메시지를 삭제할까요?')) return;
-  const list = JSON.parse(localStorage.getItem(GB_KEY) || '[]');
-  list.splice(i, 1);
-  localStorage.setItem(GB_KEY, JSON.stringify(list));
-  renderGB();
+async function delGB(key) {
+  const pw = prompt('작성 시 입력한 비밀번호');
+  if (pw === null) return;
+  if (!pw.trim()) { alert('비밀번호를 입력해주세요'); return; }
+
+  if (USE_SUPABASE) {
+    const { data, error } = await sb.rpc('delete_guestbook', {
+      entry_id: key, pw: pw.trim()
+    });
+    if (error) { alert('삭제 실패'); console.error(error); return; }
+    if (data !== true) { alert('비밀번호가 일치하지 않습니다'); return; }
+  } else {
+    const list = JSON.parse(localStorage.getItem(GB_KEY) || '[]');
+    const idx = typeof key === 'number' ? key : list.findIndex(x => x.id === key);
+    if (idx < 0) return;
+    if (list[idx]?.password !== pw.trim()) { alert('비밀번호가 일치하지 않습니다'); return; }
+    list.splice(idx, 1);
+    localStorage.setItem(GB_KEY, JSON.stringify(list));
+  }
+  await renderGB();
+  const t = document.getElementById('toast');
+  t.textContent = '메시지가 삭제되었습니다';
+  t.classList.add('on');
+  setTimeout(() => { t.classList.remove('on'); t.textContent = '복사되었습니다'; }, 2000);
+}
+
+async function editGB(key) {
+  const pw = prompt('작성 시 입력한 비밀번호');
+  if (pw === null) return;
+  if (!pw.trim()) { alert('비밀번호를 입력해주세요'); return; }
+
+  let currentMsg = '';
+  if (USE_SUPABASE) {
+    const { data } = await sb.from('guestbook').select('message').eq('id', key).maybeSingle();
+    currentMsg = data?.message || '';
+  } else {
+    const list = JSON.parse(localStorage.getItem(GB_KEY) || '[]');
+    const idx = typeof key === 'number' ? key : list.findIndex(x => x.id === key);
+    currentMsg = list[idx]?.msg || '';
+  }
+
+  const newMsg = prompt('메시지를 수정해주세요', currentMsg);
+  if (newMsg === null) return;
+  if (!newMsg.trim()) { alert('빈 메시지로 수정할 수 없습니다'); return; }
+
+  if (USE_SUPABASE) {
+    const { data, error } = await sb.rpc('update_guestbook', {
+      entry_id: key, pw: pw.trim(), new_message: newMsg.trim()
+    });
+    if (error) { alert('수정 실패'); console.error(error); return; }
+    if (data !== true) { alert('비밀번호가 일치하지 않습니다'); return; }
+  } else {
+    const list = JSON.parse(localStorage.getItem(GB_KEY) || '[]');
+    const idx = typeof key === 'number' ? key : list.findIndex(x => x.id === key);
+    if (idx < 0) return;
+    if (list[idx]?.password !== pw.trim()) { alert('비밀번호가 일치하지 않습니다'); return; }
+    list[idx].msg = newMsg.trim();
+    localStorage.setItem(GB_KEY, JSON.stringify(list));
+  }
+  await renderGB();
+  const t = document.getElementById('toast');
+  t.textContent = '메시지가 수정되었습니다';
+  t.classList.add('on');
+  setTimeout(() => { t.classList.remove('on'); t.textContent = '복사되었습니다'; }, 2000);
 }
 
 function escapeHTML(s) {
