@@ -765,15 +765,22 @@
       font-weight: 300; margin-bottom: 1.1rem; line-height: 1.6;
     }
 
-    /* 약도 SVG */
+    /* 약도 이미지 */
     .sketch-map {
       width: 100%;
-      background: #0d0a07;
+      background: #fff;
       border-radius: 6px;
-      padding: 12px;
+      padding: 8px;
       margin-bottom: 1rem;
+      border: 0.5px solid var(--dust-light);
+      box-sizing: border-box;
     }
-    .sketch-map svg { width: 100%; height: auto; display: block; }
+    .sketch-map img {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 4px;
+    }
 
     .map-btn {
       display: flex; align-items: center; justify-content: center; gap: 10px;
@@ -1366,80 +1373,9 @@
   </div>
   <div class="venue-addr">서울 용산구 한강대로 205 (용산동1가)<br>2026. 09. 05 (토)</div>
 
-  <!-- 약도 SVG (로얄파크컨벤션) -->
+  <!-- 약도 이미지 (로얄파크컨벤션·삼각지역) -->
   <div class="sketch-map">
-    <svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
-      <!-- 배경 -->
-      <rect width="400" height="300" fill="#0d0a07"/>
-
-      <!-- 주황색 도로 (6호선) -->
-      <line x1="0" y1="130" x2="400" y2="110" stroke="#c97a3a" stroke-width="7" stroke-linecap="round"/>
-      <text x="210" y="124" font-family="Noto Sans KR" font-size="9" fill="#f4d4a8" font-weight="300">⑥호선 삼각지역</text>
-
-      <!-- 남색 세로 도로 (1호선) -->
-      <line x1="150" y1="0" x2="150" y2="300" stroke="#1a3a7a" stroke-width="6"/>
-      <text x="140" y="40" font-family="Noto Sans KR" font-size="9" fill="#aac4ee" font-weight="300" transform="rotate(-90 140 40)">①호선 남영역</text>
-
-      <!-- 하늘색 세로 도로 (4호선) -->
-      <line x1="210" y1="40" x2="210" y2="280" stroke="#4a9dd4" stroke-width="6"/>
-      <text x="200" y="210" font-family="Noto Sans KR" font-size="9" fill="#bde0f4" font-weight="300" transform="rotate(-90 200 210)">④호선 삼각지역</text>
-      <!-- 4호선 마커 -->
-      <circle cx="210" cy="150" r="8" fill="#4a9dd4" stroke="#fff" stroke-width="1"/>
-      <text x="210" y="153" text-anchor="middle" font-family="Arial" font-size="9" fill="#fff" font-weight="bold">1</text>
-
-      <!-- 녹색 영역 (컨벤션 단지) -->
-      <rect x="275" y="50" width="120" height="110" fill="#d4e0c8" opacity="0.35" rx="2"/>
-      <text x="282" y="62" font-family="Noto Sans KR" font-size="8" fill="#9aa890">북문</text>
-
-      <!-- 로얄파크 건물 -->
-      <rect x="285" y="72" width="50" height="32" fill="#6b2828" rx="1"/>
-      <text x="310" y="87" text-anchor="middle" font-family="serif" font-size="7" fill="#f4d4a8" font-style="italic">ROYAL</text>
-      <text x="310" y="96" text-anchor="middle" font-family="serif" font-size="7" fill="#f4d4a8" font-style="italic">PARK</text>
-
-      <!-- 핀 아이콘 -->
-      <circle cx="310" cy="120" r="6" fill="#a03030"/>
-      <polygon points="306,125 314,125 310,132" fill="#a03030"/>
-      <circle cx="310" cy="120" r="2" fill="#fff"/>
-
-      <!-- 전쟁기념관 -->
-      <rect x="345" y="72" width="45" height="32" fill="#3a3833" opacity="0.5" rx="1"/>
-      <text x="367" y="92" text-anchor="middle" font-family="Noto Sans KR" font-size="7" fill="#aaa">전쟁기념관</text>
-
-      <!-- 문 표시 -->
-      <text x="290" y="155" font-family="Noto Sans KR" font-size="7" fill="#9aa890">서문</text>
-      <text x="335" y="155" font-family="Noto Sans KR" font-size="7" fill="#9aa890">정문</text>
-      <text x="375" y="155" font-family="Noto Sans KR" font-size="7" fill="#9aa890">동문</text>
-
-      <!-- 서문 12번 마커 -->
-      <circle cx="295" cy="145" r="7" fill="#c97a3a"/>
-      <text x="295" y="148" text-anchor="middle" font-family="Arial" font-size="7" fill="#fff" font-weight="bold">12</text>
-
-      <!-- 주요 건물들 -->
-      <text x="45" y="100" font-family="Noto Sans KR" font-size="7" fill="#888">용산e편한</text>
-      <text x="45" y="110" font-family="Noto Sans KR" font-size="7" fill="#888">세상아파트</text>
-      <circle cx="60" cy="90" r="2" fill="#888"/>
-
-      <text x="95" y="75" font-family="Noto Sans KR" font-size="7" fill="#888">원효로1동</text>
-      <text x="95" y="85" font-family="Noto Sans KR" font-size="7" fill="#888">주민센터</text>
-      <circle cx="100" cy="67" r="2" fill="#888"/>
-
-      <text x="175" y="90" font-family="Noto Sans KR" font-size="7" fill="#888">용산파크자이</text>
-      <circle cx="180" cy="80" r="2" fill="#888"/>
-
-      <text x="170" y="175" font-family="Noto Sans KR" font-size="7" fill="#888">용산초등학교</text>
-      <text x="155" y="210" font-family="Noto Sans KR" font-size="7" fill="#888">용산소방서</text>
-
-      <text x="240" y="190" font-family="Noto Sans KR" font-size="7" fill="#888">삼각지</text>
-      <text x="240" y="200" font-family="Noto Sans KR" font-size="7" fill="#888">어린이공원</text>
-
-      <text x="335" y="230" font-family="Noto Sans KR" font-size="7" fill="#888">국방부</text>
-      <circle cx="340" cy="220" r="2" fill="#888"/>
-
-      <!-- 방향 표시 -->
-      <text x="10" y="230" font-family="Noto Sans KR" font-size="7" fill="#666">◂ 효창공원 방면</text>
-      <text x="310" y="280" font-family="Noto Sans KR" font-size="7" fill="#666">이태원 방면 ▸</text>
-      <text x="140" y="15" text-anchor="end" font-family="Noto Sans KR" font-size="7" fill="#666">▴ 서울역 방면</text>
-    </svg>
+    <img src="venue-map.png" alt="로얄파크 컨벤션 위치 약도. 삼각지역 ⑥호선 12번 출구·④호선 1번 출구 및 전쟁기념관 부지 안내" loading="lazy" decoding="async">
   </div>
 
   <a class="map-btn" href="https://map.kakao.com/link/search/용산 로얄파크컨벤션" target="_blank">
