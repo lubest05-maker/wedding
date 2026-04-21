@@ -1114,18 +1114,136 @@
 
     /* 인사말 greeting (이름 각인) */
     .msg-greeting {
-      font-family: 'Cormorant Garamond', serif;
-      font-style: italic;
-      font-size: 17px;
-      color: var(--dust);
+      font-family: 'Noto Serif KR', serif;
+      font-size: 16px;
+      color: var(--ink);
+      font-weight: 300;
       text-align: center;
-      margin-bottom: 1.2rem;
-      letter-spacing: 2px;
+      margin-bottom: 1.8rem;
+      letter-spacing: 3px;
       opacity: 0;
       transform: translateY(6px);
       transition: opacity 0.8s ease, transform 0.8s ease;
+      position: relative;
+      padding-bottom: 1.1rem;
     }
     .msg-greeting.show { opacity: 1; transform: none; }
+    .msg-greeting::before {
+      content: 'Dear';
+      display: block;
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 11px;
+      letter-spacing: 5px;
+      color: var(--dust);
+      margin-bottom: 8px;
+      font-weight: 400;
+    }
+    .msg-greeting::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 36px;
+      height: 0.5px;
+      background: var(--dust);
+    }
+
+    /* ── WELCOME SPLASH (이름 각인 리빌) ── */
+    .welcome-splash {
+      position: fixed; inset: 0; z-index: 4900;
+      background: linear-gradient(135deg, #0d0a07 0%, #1a1410 55%, #2a1f17 100%);
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity 0.9s ease, visibility 0s linear 0.9s;
+    }
+    .welcome-splash.show {
+      opacity: 1;
+      visibility: visible;
+      transition: opacity 0.9s ease, visibility 0s linear 0s;
+      pointer-events: auto;
+    }
+    .welcome-inner {
+      text-align: center;
+      color: #f9f5ef;
+      max-width: 420px;
+      width: 100%;
+    }
+    .welcome-ornament {
+      font-size: 16px;
+      color: rgba(196,168,130,0.5);
+      margin-bottom: 2.2rem;
+      opacity: 0;
+    }
+    .welcome-prefix {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 13px;
+      font-weight: 300;
+      letter-spacing: 8px;
+      color: rgba(196,168,130,0.75);
+      margin-bottom: 1.4rem;
+      opacity: 0;
+    }
+    .welcome-name {
+      font-family: 'Noto Serif KR', serif;
+      font-size: clamp(28px, 9vw, 38px);
+      font-weight: 200;
+      letter-spacing: 6px;
+      color: #f9f5ef;
+      margin-bottom: 0;
+      opacity: 0;
+      text-shadow: 0 2px 30px rgba(196,168,130,0.15);
+    }
+    .welcome-divider {
+      width: 60px;
+      height: 0.5px;
+      background: rgba(196,168,130,0.5);
+      margin: 2rem auto;
+      opacity: 0;
+      transform-origin: center;
+    }
+    .welcome-msg {
+      font-family: 'Noto Serif KR', serif;
+      font-size: 14px;
+      font-weight: 200;
+      line-height: 2.2;
+      color: rgba(249,245,239,0.8);
+      letter-spacing: 2px;
+      margin-bottom: 2.4rem;
+      opacity: 0;
+    }
+    .welcome-sig {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 15px;
+      font-weight: 300;
+      letter-spacing: 5px;
+      color: rgba(196,168,130,0.9);
+      opacity: 0;
+    }
+    .welcome-splash.show .welcome-ornament { animation: wFade 0.8s 0.2s both; }
+    .welcome-splash.show .welcome-prefix   { animation: wFade 0.8s 0.6s both; }
+    .welcome-splash.show .welcome-name     { animation: wFadeName 1.1s 1.0s both; }
+    .welcome-splash.show .welcome-divider  { animation: wExpand 0.7s 1.9s both; }
+    .welcome-splash.show .welcome-msg      { animation: wFade 0.9s 2.3s both; }
+    .welcome-splash.show .welcome-sig      { animation: wFade 0.8s 3.1s both; }
+    @keyframes wFade {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: none; }
+    }
+    @keyframes wFadeName {
+      from { opacity: 0; transform: translateY(12px) scale(0.96); letter-spacing: 14px; }
+      to { opacity: 1; transform: none; letter-spacing: 6px; }
+    }
+    @keyframes wExpand {
+      from { opacity: 0; width: 0; }
+      to { opacity: 1; width: 60px; }
+    }
 
     /* ── LETTERS (신랑/신부 편지) ── */
     .letters-wrap {
@@ -1220,6 +1338,21 @@
   </style>
 </head>
 <body>
+
+<!-- ── WELCOME SPLASH (이름 각인 리빌) ── -->
+<div id="welcome-splash" class="welcome-splash">
+  <div class="welcome-inner">
+    <div class="welcome-ornament">❦</div>
+    <div class="welcome-prefix">DEAR</div>
+    <div class="welcome-name" id="welcome-name">—</div>
+    <div class="welcome-divider"></div>
+    <div class="welcome-msg">
+      이 청첩장은 오롯이<br>
+      당신을 위해 쓰여졌습니다
+    </div>
+    <div class="welcome-sig">Minho &amp; Danbi</div>
+  </div>
+</div>
 
 <!-- ── ENVELOPE INTRO (이름 각인) ── -->
 <div id="envelope" class="envelope-overlay">
@@ -1995,12 +2128,25 @@ function applyGuestName(name) {
   const el = document.getElementById('msg-greeting');
   if (!el) return;
   if (name && name.trim()) {
-    el.textContent = name.trim() + '님,';
+    el.textContent = name.trim() + ' 님께';
     setTimeout(() => el.classList.add('show'), 300);
   } else {
     el.textContent = '';
     el.classList.remove('show');
   }
+}
+function showWelcomeSplash(name) {
+  const splash = document.getElementById('welcome-splash');
+  const nameEl = document.getElementById('welcome-name');
+  if (!splash || !nameEl) return false;
+  nameEl.textContent = name + ' 님';
+  splash.classList.add('show');
+  // 전체 연출 시간: 약 4.3초 후 페이드아웃
+  setTimeout(() => {
+    splash.classList.remove('show');
+    document.body.style.overflow = '';
+  }, 4300);
+  return true;
 }
 function openEnvelope() {
   const input = document.getElementById('env-name');
@@ -2014,7 +2160,9 @@ function openEnvelope() {
   localStorage.setItem(GUEST_NAME_KEY, name);
   applyGuestName(name);
   document.getElementById('envelope').classList.add('open');
-  document.body.style.overflow = '';
+  // 봉투 페이드아웃과 동시에 스플래시 페이드인
+  const shown = showWelcomeSplash(name);
+  if (!shown) document.body.style.overflow = '';
 }
 function skipEnvelope() {
   localStorage.setItem(GUEST_NAME_KEY, '');
