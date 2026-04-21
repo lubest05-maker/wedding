@@ -1473,14 +1473,14 @@ const bgm = document.getElementById('bgm');
 const musicBtn = document.getElementById('music-btn');
 let playing = false;
 function toggleMusic() {
-  
-  }
   if (playing) {
     bgm.pause();
     musicBtn.textContent = '♪';
     musicBtn.classList.add('muted');
   } else {
-    bgm.play();
+    bgm.play().catch(err => {
+      console.log('재생 실패:', err);
+    });
     musicBtn.textContent = '♬';
     musicBtn.classList.remove('muted');
   }
