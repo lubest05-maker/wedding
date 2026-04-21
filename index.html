@@ -1028,8 +1028,8 @@
 <div class="scene" data-s>
   <div class="wedding-cal-wrap">
     <div class="wc-title">WEDDING DAY</div>
-    <div class="wc-date-ko">2026년 9월 5일 토요일 | 오후 1시</div>
-    <div class="wc-date-en">Saturday, September 5, 2026 | PM 1:00</div>
+    <div class="wc-date-ko">2026년 9월 5일 토요일 | 오후 12시 30분</div>
+    <div class="wc-date-en">Saturday, September 5, 2026 | 12:30 PM</div>
 
     <div class="wc-divider"></div>
 
@@ -1553,14 +1553,20 @@ const obs = new IntersectionObserver(entries => {
 scenes.forEach(s => obs.observe(s));
 
 /* ── WEDDING CALENDAR (결혼식 달이 고정) + 실시간 카운트다운 ── */
-const WEDDING = new Date('2026-09-05T13:00:00');
+/** 예식 시각: 한국 표준시 고정 (브라우저/기기 타임존과 무관하게 동일한 순간) */
+const WEDDING = new Date('2026-09-05T12:30:00+09:00');
+const WEDDING_MS = WEDDING.getTime();
+/** 달력 그리드는 항상 2026년 9월·5일 기준 (해외에서 열어도 날짜 표기가 어긋나지 않게) */
+const CAL_YEAR = 2026;
+const CAL_MONTH = 8;
+const CAL_WEDDING_DAY = 5;
 
 function renderWeddingCal() {
   const grid = document.getElementById('wc-cal-grid');
   if (!grid) return;
-  const y = WEDDING.getFullYear();
-  const m = WEDDING.getMonth();
-  const weddingDay = WEDDING.getDate();
+  const y = CAL_YEAR;
+  const m = CAL_MONTH;
+  const weddingDay = CAL_WEDDING_DAY;
   const firstDay = new Date(y, m, 1).getDay();
   const daysInMonth = new Date(y, m + 1, 0).getDate();
 
@@ -1587,8 +1593,8 @@ function renderWeddingCal() {
 }
 
 function updateCountdown() {
-  const now = new Date();
-  let diff = WEDDING - now;
+  const nowMs = Date.now();
+  let diff = WEDDING_MS - nowMs;
 
   const elD = document.getElementById('cd-d');
   const elH = document.getElementById('cd-h');
@@ -1599,9 +1605,9 @@ function updateCountdown() {
 
   if (diff <= 0) {
     elD.textContent = '0';
-    elH.textContent = '0';
-    elM.textContent = '0';
-    elS.textContent = '0';
+    elH.textContent = '00';
+    elM.textContent = '00';
+    elS.textContent = '00';
     if (elSum) elSum.textContent = '오늘!';
     return;
   }
@@ -1614,16 +1620,23 @@ function updateCountdown() {
   diff %= 60000;
   const secs = Math.floor(diff / 1000);
 
-  elD.textContent = days;
-  elH.textContent = hours;
-  elM.textContent = mins;
-  elS.textContent = secs;
-  if (elSum) elSum.textContent = days + '일';
+  elD.textContent = String(days);
+  elH.textContent = String(hours).padStart(2, '0');
+  elM.textContent = String(mins).padStart(2, '0');
+  elS.textContent = String(secs).padStart(2, '0');
+
+  if (elSum) {
+    if (days === 0) elSum.textContent = '오늘';
+    else elSum.textContent = days + '일';
+  }
 }
 
 renderWeddingCal();
 updateCountdown();
 setInterval(updateCountdown, 1000);
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) updateCountdown();
+});
 
 /* ── COPY ── */
 function doCopy(num) {
