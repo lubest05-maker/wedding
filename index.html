@@ -1473,9 +1473,7 @@ const bgm = document.getElementById('bgm');
 const musicBtn = document.getElementById('music-btn');
 let playing = false;
 function toggleMusic() {
-  if (!bgm.src || bgm.src === window.location.href) {
-    alert('배경음악 파일(bgm.mp3)을 같은 폴더에 넣고\n<audio> 태그의 src를 설정해주세요.');
-    return;
+  
   }
   if (playing) {
     bgm.pause();
