@@ -6,6 +6,7 @@
   <title>정민호 ♥ 오단비 · 2026.09.05</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Noto+Serif+KR:wght@200;300;400&family=Noto+Sans+KR:wght@200;300;400&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     :root {
       --ink: #1a1410;
@@ -958,9 +959,263 @@
       display: flex; align-items: center; justify-content: center;
       font-size: 60px; color: var(--dust); opacity: 0.3;
     }
+
+    /* ── ENVELOPE INTRO ── */
+    .envelope-overlay {
+      position: fixed; inset: 0; z-index: 5000;
+      background: linear-gradient(135deg, #0d0a07 0%, #1a1410 60%, #2a1f17 100%);
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px;
+      transition: opacity 0.9s ease, visibility 0s linear 0.9s;
+    }
+    .envelope-overlay.open {
+      opacity: 0; visibility: hidden; pointer-events: none;
+    }
+    .env-card {
+      background: var(--paper);
+      padding: 2.6rem 1.8rem 2rem;
+      border-radius: 3px;
+      text-align: center;
+      max-width: 340px;
+      width: 100%;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(196,168,130,0.15);
+      position: relative;
+      animation: envRise 0.9s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+    .env-card::before {
+      content: ''; position: absolute;
+      top: 10px; left: 10px; right: 10px; bottom: 10px;
+      border: 0.5px solid var(--dust-light);
+      border-radius: 2px; pointer-events: none;
+    }
+    @keyframes envRise {
+      from { opacity: 0; transform: translateY(40px) scale(0.96); }
+      to { opacity: 1; transform: none; }
+    }
+    .env-seal {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 11px;
+      letter-spacing: 5px;
+      color: var(--dust);
+      margin-bottom: 8px;
+    }
+    .env-icon {
+      font-size: 28px;
+      color: var(--dust);
+      margin-bottom: 1rem;
+      opacity: 0.8;
+    }
+    .env-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 22px;
+      font-weight: 300;
+      letter-spacing: 6px;
+      color: var(--ink);
+      margin-bottom: 8px;
+    }
+    .env-title-ko {
+      font-family: 'Noto Serif KR', serif;
+      font-size: 12px;
+      color: var(--ink-mid);
+      font-weight: 300;
+      letter-spacing: 2px;
+      margin-bottom: 1.8rem;
+    }
+    .env-names {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 14px;
+      letter-spacing: 3px;
+      color: var(--dust);
+      margin-bottom: 1.6rem;
+    }
+    .env-divider {
+      width: 40px; height: 0.5px;
+      background: var(--dust-light);
+      margin: 0 auto 1.4rem;
+    }
+    .env-ask {
+      font-family: 'Noto Serif KR', serif;
+      font-size: 12px;
+      color: var(--ink-light);
+      font-weight: 300;
+      letter-spacing: 1px;
+      margin-bottom: 1rem;
+    }
+    .env-input {
+      width: 100%;
+      border: none;
+      border-bottom: 0.5px solid var(--dust);
+      background: transparent;
+      padding: 10px 4px;
+      text-align: center;
+      font-size: 15px;
+      font-family: 'Noto Serif KR', serif;
+      color: var(--ink);
+      letter-spacing: 3px;
+      margin-bottom: 1.6rem;
+      transition: border-color 0.2s;
+    }
+    .env-input:focus { outline: none; border-bottom-color: var(--ink); }
+    .env-input.err { border-bottom-color: #d47979; animation: shake 0.3s; }
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      25% { transform: translateX(-4px); }
+      75% { transform: translateX(4px); }
+    }
+    .env-btn {
+      width: 100%;
+      background: var(--ink);
+      color: rgba(249,245,239,0.95);
+      border: none;
+      padding: 12px;
+      font-size: 11px;
+      letter-spacing: 5px;
+      font-family: 'Noto Sans KR', sans-serif;
+      font-weight: 300;
+      cursor: pointer;
+      border-radius: 2px;
+      transition: background 0.15s;
+    }
+    .env-btn:active { background: var(--ink-mid); }
+    .env-skip {
+      margin-top: 14px;
+      font-size: 10.5px;
+      color: var(--dust);
+      letter-spacing: 2px;
+      cursor: pointer;
+      font-family: 'Noto Serif KR', serif;
+      opacity: 0.6;
+      transition: opacity 0.15s;
+      display: inline-block;
+    }
+    .env-skip:hover { opacity: 1; }
+
+    /* 인사말 greeting (이름 각인) */
+    .msg-greeting {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 17px;
+      color: var(--dust);
+      text-align: center;
+      margin-bottom: 1.2rem;
+      letter-spacing: 2px;
+      opacity: 0;
+      transform: translateY(6px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+    .msg-greeting.show { opacity: 1; transform: none; }
+
+    /* ── LETTERS (신랑/신부 편지) ── */
+    .letters-wrap {
+      max-width: 100%;
+    }
+    .letter-tabs {
+      display: flex;
+      border-bottom: 0.5px solid var(--dust-light);
+      margin-bottom: 1.6rem;
+    }
+    .letter-tab {
+      flex: 1;
+      background: none;
+      border: none;
+      padding: 12px 8px;
+      font-size: 13px;
+      color: var(--ink-light);
+      font-weight: 300;
+      letter-spacing: 3px;
+      cursor: pointer;
+      font-family: 'Noto Serif KR', serif;
+      position: relative;
+      transition: color 0.2s;
+    }
+    .letter-tab.active {
+      color: var(--ink);
+      font-weight: 400;
+    }
+    .letter-tab.active::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 25%; right: 25%;
+      height: 1px;
+      background: var(--ink);
+    }
+    .letter-card {
+      display: none;
+      background: var(--paper);
+      border: 0.5px solid var(--dust-light);
+      border-radius: 3px;
+      padding: 2rem 1.6rem 1.8rem;
+      position: relative;
+    }
+    .letter-card.active {
+      display: block;
+      animation: fadeLetter 0.5s ease;
+    }
+    @keyframes fadeLetter {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: none; }
+    }
+    .letter-card::before {
+      content: '';
+      position: absolute;
+      top: 10px; left: 10px; right: 10px; bottom: 10px;
+      border: 0.5px solid var(--dust-light);
+      border-radius: 2px;
+      pointer-events: none;
+      opacity: 0.6;
+    }
+    .letter-to {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 15px;
+      color: var(--dust);
+      letter-spacing: 2px;
+      margin-bottom: 1.3rem;
+      text-align: left;
+      position: relative; z-index: 1;
+    }
+    .letter-body {
+      font-family: 'Noto Serif KR', serif;
+      font-size: 13.5px;
+      line-height: 2.2;
+      color: var(--ink-mid);
+      font-weight: 300;
+      text-align: left;
+      white-space: pre-line;
+      position: relative; z-index: 1;
+    }
+    .letter-from {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 15px;
+      color: var(--dust);
+      text-align: right;
+      margin-top: 1.6rem;
+      letter-spacing: 2px;
+      position: relative; z-index: 1;
+    }
   </style>
 </head>
 <body>
+
+<!-- ── ENVELOPE INTRO (이름 각인) ── -->
+<div id="envelope" class="envelope-overlay">
+  <div class="env-card">
+    <div class="env-seal">INVITATION</div>
+    <div class="env-icon">✉</div>
+    <div class="env-title">WEDDING</div>
+    <div class="env-title-ko">청첩장이 도착했습니다</div>
+    <div class="env-names">Minho &amp; Danbi</div>
+    <div class="env-divider"></div>
+    <div class="env-ask">어떻게 불러드릴까요?</div>
+    <input type="text" id="env-name" class="env-input" placeholder="성함" maxlength="12" autocomplete="off">
+    <button class="env-btn" onclick="openEnvelope()">열어보기</button>
+    <div><span class="env-skip" onclick="skipEnvelope()">이름 없이 열기</span></div>
+  </div>
+</div>
 
 <!-- MUSIC -->
 <audio id="bgm" loop preload="auto">
@@ -998,6 +1253,7 @@
 <!-- 1. 인사말 -->
 <div class="scene" data-s>
   <div class="scene-label">인사말</div>
+  <div class="msg-greeting" id="msg-greeting"></div>
   <p class="msg">
     처음 만난 그날부터<br>
     우리의 매일은 조금씩 달라졌습니다<br>
@@ -1179,6 +1435,54 @@
 
 <div class="divider"><span class="divider-text">— vi —</span></div>
 
+<!-- 5.5. 서로에게 쓰는 편지 -->
+<div class="scene" data-s>
+  <div class="scene-title-wrap">
+    <div class="scene-title-en">LETTERS</div>
+    <div class="scene-title-ko">서로에게 쓰는 편지</div>
+    <div class="scene-title-sub">하객분들께 처음 공개하는 마음</div>
+  </div>
+
+  <div class="letters-wrap">
+    <div class="letter-tabs">
+      <button class="letter-tab active" data-letter="groom" onclick="switchLetter('groom')">신랑의 편지</button>
+      <button class="letter-tab" data-letter="bride" onclick="switchLetter('bride')">신부의 편지</button>
+    </div>
+
+    <!-- 신랑 → 신부 -->
+    <div class="letter-card active" data-card="groom">
+      <div class="letter-to">To. 단비에게</div>
+      <div class="letter-body">단비야,
+처음 너를 본 그날이
+지금도 어제처럼 생생해.
+
+너와 함께 보낸 모든 계절이
+나를 더 좋은 사람으로 만들어줬어.
+
+이제 우리가 한 이름으로 불릴 그날,
+평생 너의 봄이 되어줄게.</div>
+      <div class="letter-from">— 민호</div>
+    </div>
+
+    <!-- 신부 → 신랑 -->
+    <div class="letter-card" data-card="bride">
+      <div class="letter-to">To. 민호에게</div>
+      <div class="letter-body">민호야,
+네가 내 곁에 있다는 사실 하나만으로
+세상은 조금 더 다정해졌어.
+
+우리가 마주한 모든 순간들을
+마음에 고이 담아두었어.
+
+앞으로의 날들,
+손을 놓지 않고 함께 걸어가자.</div>
+      <div class="letter-from">— 단비</div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"><span class="divider-text">— vii —</span></div>
+
 <!-- 5. 갤러리 -->
 <div class="scene" style="padding: 2.8rem 0;" data-s>
   <div style="padding: 0 1.75rem;">
@@ -1200,7 +1504,7 @@
   </div>
 </div>
 
-<div class="divider"><span class="divider-text">— vii —</span></div>
+<div class="divider"><span class="divider-text">— viii —</span></div>
 
 <!-- 6. 예식 안내 + 약도 -->
 <div class="scene" data-s>
@@ -1347,7 +1651,7 @@
   </div>
 </div>
 
-<div class="divider"><span class="divider-text">— viii —</span></div>
+<div class="divider"><span class="divider-text">— ix —</span></div>
 
 <!-- 7. 계좌 (아코디언) -->
 <div class="scene" data-s>
@@ -1432,7 +1736,7 @@
   <a class="kakao-btn" href="#" target="_blank" style="margin-top:14px;">카카오페이로 바로 송금하기</a>
 </div>
 
-<div class="divider"><span class="divider-text">— ix —</span></div>
+<div class="divider"><span class="divider-text">— x —</span></div>
 
 <!-- 8. 방명록 -->
 <div class="scene" data-s>
@@ -1658,59 +1962,176 @@ function closeLb() {
   document.body.style.overflow = '';
 }
 
-/* ── GUESTBOOK (localStorage 기반) ── */
+/* ──────────────────────────────────────────────
+   ENVELOPE INTRO + 이름 각인
+   ────────────────────────────────────────────── */
+const GUEST_NAME_KEY = 'wedding_guest_name_minho_danbi';
+
+function applyGuestName(name) {
+  const el = document.getElementById('msg-greeting');
+  if (!el) return;
+  if (name && name.trim()) {
+    el.textContent = name.trim() + '님,';
+    setTimeout(() => el.classList.add('show'), 300);
+  } else {
+    el.textContent = '';
+    el.classList.remove('show');
+  }
+}
+function openEnvelope() {
+  const input = document.getElementById('env-name');
+  const name = (input.value || '').trim();
+  if (!name) {
+    input.classList.add('err');
+    input.focus();
+    setTimeout(() => input.classList.remove('err'), 600);
+    return;
+  }
+  localStorage.setItem(GUEST_NAME_KEY, name);
+  applyGuestName(name);
+  document.getElementById('envelope').classList.add('open');
+  document.body.style.overflow = '';
+}
+function skipEnvelope() {
+  localStorage.setItem(GUEST_NAME_KEY, '');
+  applyGuestName('');
+  document.getElementById('envelope').classList.add('open');
+  document.body.style.overflow = '';
+}
+(function initEnvelope() {
+  const saved = localStorage.getItem(GUEST_NAME_KEY);
+  if (saved !== null) {
+    applyGuestName(saved);
+    const env = document.getElementById('envelope');
+    if (env) env.style.display = 'none';
+  } else {
+    document.body.style.overflow = 'hidden';
+    const input = document.getElementById('env-name');
+    if (input) {
+      input.addEventListener('keydown', e => {
+        if (e.key === 'Enter') { e.preventDefault(); openEnvelope(); }
+      });
+    }
+  }
+})();
+
+/* ──────────────────────────────────────────────
+   LETTERS 탭 전환
+   ────────────────────────────────────────────── */
+function switchLetter(which) {
+  document.querySelectorAll('.letter-tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.letter === which);
+  });
+  document.querySelectorAll('.letter-card').forEach(c => {
+    c.classList.toggle('active', c.dataset.card === which);
+  });
+}
+
+/* ──────────────────────────────────────────────
+   SUPABASE 방명록
+   아래 두 값을 채우면 모든 하객이 메시지를 공유합니다.
+   비워두면 본인 브라우저에만 저장됩니다 (오프라인 테스트용).
+   ────────────────────────────────────────────── */
+const SUPABASE_URL = '';         // 예: 'https://xxxxx.supabase.co'
+const SUPABASE_ANON_KEY = '';    // 예: 'eyJhbGciOi...'
+
+const USE_SUPABASE = !!(SUPABASE_URL && SUPABASE_ANON_KEY && window.supabase);
+const sb = USE_SUPABASE ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
 const GB_KEY = 'wedding_guestbook_minho_danbi';
 
-function loadGB() {
-  try {
-    return JSON.parse(localStorage.getItem(GB_KEY) || '[]');
-  } catch (e) { return []; }
+async function loadGB() {
+  if (USE_SUPABASE) {
+    const { data, error } = await sb
+      .from('guestbook')
+      .select('id, name, message, created_at')
+      .order('created_at', { ascending: false })
+      .limit(500);
+    if (error) { console.error('[guestbook] load error', error); return []; }
+    return data.map(d => ({
+      id: d.id,
+      name: d.name,
+      msg: d.message,
+      time: new Date(d.created_at).getTime()
+    }));
+  }
+  try { return JSON.parse(localStorage.getItem(GB_KEY) || '[]'); }
+  catch (e) { return []; }
 }
-function saveGB(list) {
-  localStorage.setItem(GB_KEY, JSON.stringify(list));
-}
-function renderGB() {
-  const list = loadGB();
+
+function renderGBList(list) {
   const el = document.getElementById('gb-list');
   if (!el) return;
   if (list.length === 0) {
     el.innerHTML = '<div class="gb-empty">아직 메시지가 없어요.<br>첫 메시지를 남겨주세요 ♡</div>';
     return;
   }
-  el.innerHTML = list.map((m, i) => `
-    <div class="gb-item">
-      <button class="gb-del" onclick="delGB(${i})" title="삭제">✕</button>
-      <div class="gb-head">
-        <div class="gb-name">${escapeHTML(m.name)}</div>
-        <div class="gb-time">${formatTime(m.time)}</div>
+  el.innerHTML = list.map((m, i) => {
+    const delBtn = USE_SUPABASE
+      ? ''
+      : `<button class="gb-del" onclick="delGBLocal(${i})" title="삭제">✕</button>`;
+    return `
+      <div class="gb-item">
+        ${delBtn}
+        <div class="gb-head">
+          <div class="gb-name">${escapeHTML(m.name)}</div>
+          <div class="gb-time">${formatTime(m.time)}</div>
+        </div>
+        <div class="gb-msg">${escapeHTML(m.msg)}</div>
       </div>
-      <div class="gb-msg">${escapeHTML(m.msg)}</div>
-    </div>
-  `).join('');
+    `;
+  }).join('');
 }
-function submitGB() {
-  const name = document.getElementById('gb-name').value.trim();
-  const msg = document.getElementById('gb-msg').value.trim();
+
+async function renderGB() {
+  const list = await loadGB();
+  renderGBList(list);
+}
+
+async function submitGB() {
+  const nameEl = document.getElementById('gb-name');
+  const msgEl = document.getElementById('gb-msg');
+  const name = nameEl.value.trim();
+  const msg = msgEl.value.trim();
   if (!name) { alert('이름을 입력해주세요'); return; }
   if (!msg) { alert('메시지를 입력해주세요'); return; }
-  const list = loadGB();
-  list.unshift({ name, msg, time: Date.now() });
-  saveGB(list);
-  document.getElementById('gb-name').value = '';
-  document.getElementById('gb-msg').value = '';
-  renderGB();
+
+  const btn = document.querySelector('.gb-form-btn');
+  if (btn) btn.disabled = true;
+
+  if (USE_SUPABASE) {
+    const { error } = await sb.from('guestbook').insert({ name, message: msg });
+    if (btn) btn.disabled = false;
+    if (error) {
+      console.error('[guestbook] insert error', error);
+      alert('메시지 등록 실패. 잠시 후 다시 시도해주세요.');
+      return;
+    }
+  } else {
+    const list = JSON.parse(localStorage.getItem(GB_KEY) || '[]');
+    list.unshift({ name, msg, time: Date.now() });
+    localStorage.setItem(GB_KEY, JSON.stringify(list));
+    if (btn) btn.disabled = false;
+  }
+
+  nameEl.value = '';
+  msgEl.value = '';
+  await renderGB();
+
   const t = document.getElementById('toast');
   t.textContent = '메시지가 등록되었습니다';
   t.classList.add('on');
   setTimeout(() => { t.classList.remove('on'); t.textContent = '복사되었습니다'; }, 2200);
 }
-function delGB(i) {
+
+function delGBLocal(i) {
   if (!confirm('메시지를 삭제할까요?')) return;
-  const list = loadGB();
+  const list = JSON.parse(localStorage.getItem(GB_KEY) || '[]');
   list.splice(i, 1);
-  saveGB(list);
+  localStorage.setItem(GB_KEY, JSON.stringify(list));
   renderGB();
 }
+
 function escapeHTML(s) {
   return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
 }
